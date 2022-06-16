@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs')
 const {validationResult} = require('express-validator')
 const jwt = require('jsonwebtoken')
 const {secret} = require('./config.js')
-const mongoose = require('mongoose')
 
 const generateAccesToken = (id) => {
 	const payload = {
@@ -67,12 +66,12 @@ class authController {
 		}
 	}
 
-	async note(req, res) {
+	async writeNote(req, res) {
 		try {
 			const {note} = req.body
 			const id = req.id.id
-			User.updateOne({_id: id}, {$set: {note}})
-			return res.json({message: 'Note has been succesfully writed'})
+			await User.findByIdAndUpdate(id, {$set: {note: note}})
+			return res.json({message: `Note has been succesfully writed '${note}'`})
 		} catch (e) {
 			console.log(e)
 			res.status(400).json({message: 'An error occurred while writing the note'})

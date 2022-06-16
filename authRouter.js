@@ -10,6 +10,6 @@ router.post('/signin', [
 ], controller.registerUser)
 router.post('/login', controller.authorizeUser)
 router.get('/user', authMiddleware, controller.getUser)
-router.get('/note', authMiddleware, controller.note)
+router.post('/note', authMiddleware, controller.writeNote)
 
 module.exports = router
