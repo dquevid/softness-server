@@ -16,17 +16,23 @@ class authController {
 	async registerUser(req, res) {
 		try {
 			const errs = validationResult(req)
+
 			if (!errs.isEmpty()) {
-				return res.status(400).json('Registration error from client side!', errs)
+				return res.status(406).json('Registration error from client side!', errs)
 			}
+
 			const {username, password} = req.body
 			const candidate = await User.findOne({username})
+
 			if(candidate) {
-				res.status(400).json({message: 'There is already a person with same username.'})
+				res.status(400).json({message: 'There is already a person with this username.'})
+				return
 			}
+
 			const hashedPassword = bcrypt.hashSync(password, 7)
 			const user = new User({username, password: hashedPassword})
 			await user.save()
+			res.header('Content-Type', 'application/json')
 
 			return res.json({message: 'The user has been succesfully created!'})
 		} catch (e) {
@@ -39,14 +45,19 @@ class authController {
 		try {
 			const {username, password} = req.body
 			const user = await User.findOne({username})
+
 			if (!user) {
 				return res.status(404).json({message: 'User is not found'})
 			}
+
 			const validPassword = bcrypt.compareSync(password, user.password)
+
 			if (!validPassword) {
-				return res.status(400).json({message: 'Password is wrong'})
+				return res.status(403).json({message: 'Password is wrong'})
 			}
+
 			const token = generateAccesToken(user._id)
+			res.header('Content-Type', 'application/json')
 
 			return res.json({token})
 		} catch (e) {
@@ -59,6 +70,7 @@ class authController {
 		try {
 			const {id} = req
 			const user = await User.findById(id.id)
+
 			return res.json(user)
 		} catch (e) {
 			console.log(e)
@@ -71,10 +83,11 @@ class authController {
 			const {note} = req.body
 			const id = req.id.id
 			await User.findByIdAndUpdate(id, {$set: {note: note}})
+
 			return res.json({message: `Note has been succesfully writed '${note}'`})
 		} catch (e) {
 			console.log(e)
-			res.status(400).json({message: 'An error occurred while writing the note'})
+			res.status(400).json({message: 'Note writing error'})
 		}
 	}
 }
